@@ -1,147 +1,151 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>--- TODO ---</title>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.1/css/fontawesome.min.css">
+  <title>--- TODO ---</title>
 
-  </head>
-  <body>
-    
-    <h1> Chat </h1>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.1/css/fontawesome.min.css">
 
-    <h2 id="roomNumberToShow">  </h2>
+</head>
 
-    <input type="text" id="userName" class="form-control" placeholder="User Name">
+<body>
 
-    <div id="chat"></div>
+  <h1> Chat </h1>
 
-    <input type="text" id="messageContent" class="form-control" placeholder="Add message">
+  <h2 id="roomNumberToShow"> </h2>
 
-    <button type="buttton " class="btn btn-primary" onclick="sendMessage()">Send Message</button>
+  <input type="text" id="userName" class="form-control" placeholder="User Name">
 
-    <input type="number" id="roomNumber" class="form-control" placeholder="Room">
+  <div id="chat"></div>
 
-    <button type="buttton " class="btn btn-primary" onclick="joinRoom()">Join Room</button>
+  <input type="text" id="messageContent" class="form-control" placeholder="Add message">
 
-    <br>
-    <br>
-    <br>
-    <br>
+  <button type="buttton " class="btn btn-primary" onclick="sendMessage()">Send Message</button>
 
-    <input type="text" id="userNameToSpeakWith" class="form-control" placeholder="Select User to Start Chat">
+  <input type="number" id="roomNumber" class="form-control" placeholder="Room">
 
-    <button type="buttton " class="btn btn-primary" onclick="requirePrivateChat()">Start Private Chat</button>
+  <button type="buttton " class="btn btn-primary" onclick="joinRoom()">Join Room</button>
 
-    <div id="privateChatRequested"></div>
+  <br>
+  <br>
+  <br>
+  <br>
 
-    <!-- Including Bootstrap JS (with its jQuery dependency) so that dynamic components work -->
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    
-    <script src="/socket.io/socket.io.js"></script>
+  <input type="text" id="userNameToSpeakWith" class="form-control" placeholder="Select User to Start Chat">
 
-    <script>
+  <button type="buttton " class="btn btn-primary" onclick="requirePrivateChat()">Start Private Chat</button>
 
-      let userSendingPrivateChatRequestSaved;
+  <div id="privateChatRequested"></div>
 
-      class Message {
-        constructor(messageContent,userName, roomName){
-            this.messageContent = messageContent;
-            this.userName = userName;
-            this.roomName = roomName;
-        }
+  <!-- Including Bootstrap JS (with its jQuery dependency) so that dynamic components work -->
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"
+    integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+
+    let userSendingPrivateChatRequestSaved;
+
+    class Message {
+      constructor(messageContent, userName, roomName) {
+        this.messageContent = messageContent;
+        this.userName = userName;
+        this.roomName = roomName;
       }
+    }
 
-      let currentChatMessages=[];
+    let currentChatMessages = [];
 
-      let socket = io.connect('http://localhost:3000');
+    let socket = io.connect('http://localhost:4000');
 
-      console.log('conneted');
+    console.log('conneted');
 
-      socket.on('messagesUpdated', (updatedMessages)=> {
-        //When messages update is received from Backend updates the frontend array for them.
-        currentChatMessages = updatedMessages;
-        updateChatContent();
-        
-      }); 
+    socket.on('messagesUpdated', (updatedMessages) => {
+      //When messages update is received from Backend updates the frontend array for them.
+      currentChatMessages = updatedMessages;
+      updateChatContent();
 
-      socket.on('privateChatRequest', (userSendingPrivateChatRequest)=> {
+    });
 
-        console.log("Private request received")
+    socket.on('privateChatRequest', (userSendingPrivateChatRequest) => {
 
-        userSendingPrivateChatRequestSaved = userSendingPrivateChatRequest;
+      console.log("Private request received")
 
-        document.getElementById("privateChatRequested").innerHTML = 
-        
+      userSendingPrivateChatRequestSaved = userSendingPrivateChatRequest;
+
+      document.getElementById("privateChatRequested").innerHTML =
+
         userSendingPrivateChatRequest + " has requested you to enter a private chat"
 
         + "<br>"
 
         + "<button type='button' onclick='acceptPrivateChat()'> Accept </button>"
-        
-      }); 
-      
-      function joinRoom(){
-        //Sends to Server Room to join.
-        let roomName = document.getElementById("roomNumber").value;
-        let userName = document.getElementById("userName").value;
-        let roomNameAndUserName = {
-          "roomName": roomName,
-          "userName": userName
-        }
-        socket.emit("joinRoom", roomNameAndUserName);
+
+    });
+
+    function joinRoom() {
+      //Sends to Server Room to join.
+      let roomName = document.getElementById("roomNumber").value;
+      let userName = document.getElementById("userName").value;
+      let roomNameAndUserName = {
+        "roomName": roomName,
+        "userName": userName
       }
+      socket.emit("joinRoom", roomNameAndUserName);
+    }
 
-      function sendMessage(){
-        //Sends message to a certain room
+    function sendMessage() {
+      //Sends message to a certain room
 
-        let messageContent = document.getElementById("messageContent").value;
-        let roomName = "";
-        let userName = document.getElementById("userName").value;
+      let messageContent = document.getElementById("messageContent").value;
+      let roomName = "";
+      let userName = document.getElementById("userName").value;
 
-        const newMessage = new Message(messageContent, userName, roomName);
-        socket.emit("newMessage", newMessage);
-      }
-      
-      function updateChatContent(){
-        //Updates the content on Frontend acording to the info stored on "currentChatMessages"
+      const newMessage = new Message(messageContent, userName, roomName);
+      socket.emit("newMessage", newMessage);
+    }
 
-        let chatContentHtml = "";
+    function updateChatContent() {
+      //Updates the content on Frontend acording to the info stored on "currentChatMessages"
 
-        currentChatMessages.forEach((message)=>{
-          chatContentHtml += (message.userName + ": " + message.messageContent + "<br>");
-        });
+      let chatContentHtml = "";
 
-        document.getElementById("chat").innerHTML = chatContentHtml;
-      }
+      currentChatMessages.forEach((message) => {
+        chatContentHtml += (message.userName + ": " + message.messageContent + "<br>");
+      });
 
-      function requirePrivateChat(){
+      document.getElementById("chat").innerHTML = chatContentHtml;
+    }
 
-        let userNameToSpeakWith = document.getElementById("userNameToSpeakWith").value;
+    function requirePrivateChat() {
 
-        socket.emit("requirePrivateChat", userNameToSpeakWith);
+      let userNameToSpeakWith = document.getElementById("userNameToSpeakWith").value;
 
-      }
+      socket.emit("requirePrivateChat", userNameToSpeakWith);
 
-      function acceptPrivateChat(){
+    }
 
-        let userSendingPrivateChatRequest = userSendingPrivateChatRequestSaved;
+    function acceptPrivateChat() {
 
-        socket.emit("acceptPrivateChat", userSendingPrivateChatRequest);
+      let userSendingPrivateChatRequest = userSendingPrivateChatRequestSaved;
 
-        document.getElementById("privateChatRequested").innerHTML = "";
+      socket.emit("acceptPrivateChat", userSendingPrivateChatRequest);
 
-        console.log("Chat Accepted for " + userSendingPrivateChatRequest)
+      document.getElementById("privateChatRequested").innerHTML = "";
 
-      }
+      console.log("Chat Accepted for " + userSendingPrivateChatRequest)
 
-    </script>
+    }
 
-  </body>
+  </script>
+
+</body>
+
 </html>
